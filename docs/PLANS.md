@@ -10,7 +10,7 @@
 - [] Integrate with augment-swebench-agent
 - [] Add an icon to open up a view in the sidebar
 - [] View should contain an area for having a conversation between the user and the LLM/agent
-- [] In the future there will be two types of conversation, chat and agent. For now this view should just implement chat support.
+- [] In the future there will be two types of conversation, chat and agent. For now this view should just implement agent support.
 - [] LLMs often give back markdown so the chat view should have markdown support
 - [] Settings for providing an API key for OpenAI and Anthropic models
 

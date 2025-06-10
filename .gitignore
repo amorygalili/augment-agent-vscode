@@ -1,1 +1,4 @@
 api_keys.sh
+node_modules/
+.vscode-test/
+out/
