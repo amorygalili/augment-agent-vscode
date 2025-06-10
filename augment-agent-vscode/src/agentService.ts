@@ -31,8 +31,21 @@ export class AgentService {
     private currentWorkspace: string;
 
     constructor(private config: AgentConfig) {
-        this.outputChannel = vscode.window.createOutputChannel('Augment Agent');
+        this.outputChannel = vscode.window.createOutputChannel('Coding Agent');
         this.currentWorkspace = config.workspace;
+
+        // Send welcome message if in demo mode
+        if (!config.agentPath) {
+            setTimeout(() => {
+                const welcomeMessage: AgentMessage = {
+                    id: 'welcome-' + Date.now().toString(),
+                    type: 'system',
+                    content: '🎉 Welcome to Coding Agent! This is demo mode. Configure the agent path in settings to connect to the AI assistant.',
+                    timestamp: new Date()
+                };
+                this.notifyHandlers(welcomeMessage);
+            }, 500);
+        }
     }
 
     public updateConfig(config: AgentConfig) {
@@ -95,8 +108,13 @@ export class AgentService {
         this.log(`User message: ${message}`);
 
         try {
-            await this.startAgent();
-            await this.sendToAgent(message);
+            if (!this.config.agentPath) {
+                // Demo mode - simulate agent response
+                await this.simulateAgentResponse(message);
+            } else {
+                await this.startAgent();
+                await this.sendToAgent(message);
+            }
         } catch (error) {
             const errorMessage: AgentMessage = {
                 id: Date.now().toString(),
@@ -110,18 +128,19 @@ export class AgentService {
     }
 
     private validateConfig(): boolean {
+        // If no agent path is configured, we'll run in demo mode
         if (!this.config.agentPath) {
-            vscode.window.showErrorMessage('Augment Agent: Please configure the agent path in settings');
-            return false;
+            this.log('No agent path configured, running in demo mode');
+            return true;
         }
 
         if (!fs.existsSync(this.config.agentPath)) {
-            vscode.window.showErrorMessage(`Augment Agent: Agent script not found at ${this.config.agentPath}`);
+            vscode.window.showErrorMessage(`Coding Agent: Agent script not found at ${this.config.agentPath}`);
             return false;
         }
 
         if (!this.config.openaiApiKey && !this.config.anthropicApiKey) {
-            vscode.window.showWarningMessage('Augment Agent: No API keys configured. Please set OpenAI or Anthropic API key in settings');
+            vscode.window.showWarningMessage('Coding Agent: No API keys configured. Please set OpenAI or Anthropic API key in settings');
         }
 
         return true;
@@ -219,7 +238,7 @@ export class AgentService {
             }
 
             const message: AgentMessage = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
                 type: 'agent',
                 content: line.trim(),
                 timestamp: new Date()
@@ -227,6 +246,31 @@ export class AgentService {
 
             this.notifyHandlers(message);
         }
+    }
+
+    private async simulateAgentResponse(userMessage: string): Promise<void> {
+        // Simulate thinking time
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+        const responses = [
+            "I'm a demo version of the Coding Agent. To use the full functionality, please configure the agent path in settings.",
+            "Hello! I can see your message, but I'm running in demo mode. Configure the agent path to connect to the real AI assistant.",
+            "This is a demonstration of the React + Material UI interface. The real agent would analyze your code and provide intelligent assistance.",
+            "Demo mode active! The interface is working perfectly. Set up the agent configuration to unlock AI-powered coding assistance.",
+            `You said: "${userMessage}". In full mode, I would provide detailed code analysis and suggestions based on your workspace.`
+        ];
+
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+        const agentMessage: AgentMessage = {
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+            type: 'agent',
+            content: randomResponse,
+            timestamp: new Date()
+        };
+
+        this.notifyHandlers(agentMessage);
+        this.log(`Demo response: ${randomResponse}`);
     }
 
     private async sendToAgent(message: string): Promise<void> {

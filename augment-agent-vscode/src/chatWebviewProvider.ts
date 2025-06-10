@@ -17,7 +17,7 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
 
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
+        _context: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken,
     ) {
         this._view = webviewView;
@@ -73,11 +73,8 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
-        // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
-        const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
-        const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
-        const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
+        // Get the React bundle
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview', 'bundle.js'));
 
         // Use a nonce to only allow a specific script to be run.
         const nonce = getNonce();
@@ -86,43 +83,30 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval'; script-src 'nonce-${nonce}' 'unsafe-eval'; font-src ${webview.cspSource} data:; img-src ${webview.cspSource} data:;">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <link href="${styleResetUri}" rel="stylesheet">
-                <link href="${styleVSCodeUri}" rel="stylesheet">
-                <link href="${styleMainUri}" rel="stylesheet">
                 <title>Coding Agent Chat</title>
+                <style>
+                    body {
+                        background: #1e1e1e;
+                        color: #cccccc;
+                        font-family: 'Segoe UI', sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .loading {
+                        text-align: center;
+                        padding: 20px;
+                    }
+                </style>
             </head>
             <body>
-                <div class="chat-container">
-                    <div class="chat-header">
-                        <h3>Coding Agent</h3>
-                        <button id="clearBtn" class="clear-button" title="Clear chat history">
-                            <span class="codicon codicon-clear-all"></span>
-                        </button>
-                    </div>
-                    <div id="messagesContainer" class="messages-container">
-                        <div class="welcome-message">
-                            <p>Welcome to Augment Agent! I'm an AI-powered software engineering assistant.</p>
-                            <p>I can help you with:</p>
-                            <ul>
-                                <li>Code analysis and debugging</li>
-                                <li>Writing and modifying code</li>
-                                <li>Running tests and commands</li>
-                                <li>Exploring codebases</li>
-                            </ul>
-                            <p>Type your message below to get started!</p>
-                        </div>
-                    </div>
-                    <div class="input-container">
-                        <div class="input-wrapper">
-                            <textarea id="messageInput" placeholder="Type your message here..." rows="3"></textarea>
-                            <button id="sendBtn" class="send-button" title="Send message">
-                                <span class="codicon codicon-send"></span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <div class="loading">Loading Coding Agent...</div>
+                <div id="root"></div>
+                <script nonce="${nonce}">
+                    console.log('Webview HTML loaded');
+                    document.querySelector('.loading').textContent = 'Loading React app...';
+                </script>
                 <script nonce="${nonce}" src="${scriptUri}"></script>
             </body>
             </html>`;

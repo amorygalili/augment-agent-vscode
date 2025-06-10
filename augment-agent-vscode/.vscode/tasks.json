@@ -45,6 +45,18 @@
                 "reveal": "never"
             }
         },
+        {
+            "type": "npm",
+            "script": "watch:webview",
+            "group": "build",
+            "problemMatcher": [],
+            "isBackground": true,
+            "label": "npm: watch:webview",
+            "presentation": {
+                "group": "watch",
+                "reveal": "never"
+            }
+        },
 		{
             "type": "npm",
             "script": "watch:tsc",
@@ -75,6 +87,18 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"label": "watch-with-webview",
+			"dependsOn": [
+				"npm: watch:tsc",
+				"npm: watch:esbuild",
+				"npm: watch:webview"
+			],
+			"presentation": {
+				"reveal": "never"
+			},
+			"group": "build"
 		}
 	]
 }
