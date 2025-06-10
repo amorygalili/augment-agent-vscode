@@ -8,32 +8,32 @@ Use `cli.py` with Docker containers for isolated development on your projects.
 
 Clone the repository, install Python dependencies, and set API keys:
 
-```powershell
+```bash
 # 1. Clone the repository
 git clone https://github.com/augmentcode/augment-swebench-agent.git
 cd augment-swebench-agent
 
 # 2. Create virtual environment
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+source .venv/bin/activate # On Linux/Mac
 
 # 3. Install requirements
 pip install -r requirements.txt
 pip install -e .
 
 # 4. Set API keys
-$env:ANTHROPIC_API_KEY = "your_anthropic_api_key_here"
-$env:OPENAI_API_KEY = "your_openai_api_key_here"
+export ANTHROPIC_API_KEY="your_anthropic_api_key_here"
+export OPENAI_API_KEY="your_openai_api_key_here"
 ```
 
 ## Quick Start
 
-```powershell
+```bash
 # 1. Start container with your project
-docker run -it -d --name my-workspace -v "C:\your\project:/testbed" ubuntu:22.04 bash
+docker run -it -d --name my-workspace -v "/your/project:/testbed" -w /testbed ubuntu:22.04 bash
 
 # 2. Run the CLI
-python cli.py --docker-container-id (docker ps -q --filter "name=my-workspace") --use-container-workspace /testbed --workspace /testbed
+python cli.py --docker-container-id [CONTAINER_ID] --use-container-workspace /testbed --workspace /testbed
 ```
 
 ## Required Arguments
@@ -46,31 +46,31 @@ python cli.py --docker-container-id (docker ps -q --filter "name=my-workspace") 
 
 ## Common Container Types
 
-```powershell
+```bash
 # Python projects
-docker run -it -d --name python-dev -v "C:\MyProject:/testbed" python:3.11 bash
+docker run -it -d --name python-dev -v "/your/project:/testbed" python:3.11 bash
 
 # Node.js projects
-docker run -it -d --name node-dev -v "C:\MyProject:/testbed" node:18 bash
+docker run -it -d --name node-dev -v "/your/project:/testbed" node:18 bash
 
 # Basic Ubuntu
-docker run -it -d --name basic-dev -v "C:\MyProject:/testbed" ubuntu:22.04 bash
+docker run -it -d --name basic-dev -v "/your/project:/testbed" ubuntu:22.04 bash
 ```
 
 ## Troubleshooting
 
 **Container not found?**
-```powershell
+```bash
 docker ps  # Check if container is running
 ```
 
 **Container exits immediately?**
-```powershell
+```bash
 # Use this instead
-docker run -it -d --name my-workspace -v "C:\project:/testbed" ubuntu:22.04 tail -f /dev/null
+docker run -it -d --name my-workspace -v "/project:/testbed" ubuntu:22.04 tail -f /dev/null
 ```
 
 **Permission errors?**
-```powershell
-docker exec -u root -it $containerId chown -R 1000:1000 /testbed
+```bash
+docker exec -u root -it $containerId chown -R 777:777 /testbed
 ```
