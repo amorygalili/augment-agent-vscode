@@ -3,12 +3,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     mode: 'development',
-    entry: './src/webview/index.tsx',
+    entry: path.resolve(__dirname, 'src/index.tsx'),
     output: {
-        path: path.resolve(__dirname, 'dist/webview'),
+        path: path.resolve(__dirname, '../dist/webview'),
         filename: 'bundle.js',
         clean: true,
     },
+    context: __dirname,
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.jsx'],
     },
@@ -19,7 +20,7 @@ module.exports = {
                 use: {
                     loader: 'ts-loader',
                     options: {
-                        configFile: 'tsconfig.webview.json'
+                        configFile: path.resolve(__dirname, 'tsconfig.json')
                     }
                 },
                 exclude: /node_modules/,
@@ -32,7 +33,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/webview/index.html',
+            template: path.resolve(__dirname, 'public/index.html'),
             filename: 'index.html',
         }),
     ],

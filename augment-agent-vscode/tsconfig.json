@@ -19,8 +19,7 @@
 		"src/**/*"
 	],
 	"exclude": [
-		"src/webview/**/*",
-		"node_modules/@types/react*",
-		"node_modules/@mui/**/*"
+		"node_modules",
+		"webview"
 	]
 }

@@ -16,10 +16,10 @@
     "noEmit": false,
     "jsx": "react-jsx",
     "declaration": false,
-    "outDir": "./dist/webview-ts"
+    "outDir": "../dist/webview-ts"
   },
   "include": [
-    "src/webview"
+    "src"
   ],
   "exclude": [
     "node_modules"
