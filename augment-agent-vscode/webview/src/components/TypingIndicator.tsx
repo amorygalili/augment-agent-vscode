@@ -16,7 +16,7 @@ const TypingDots: React.FC = () => (
   <Box
     sx={{
       display: 'flex',
-      gap: 0.5,
+      gap: 0.25,
       alignItems: 'center',
     }}
   >
@@ -24,8 +24,8 @@ const TypingDots: React.FC = () => (
       <Box
         key={index}
         sx={{
-          width: 6,
-          height: 6,
+          width: 4,
+          height: 4,
           borderRadius: '50%',
           bgcolor: 'primary.main',
           animation: `${pulse} 1.4s ease-in-out infinite`,
@@ -38,28 +38,31 @@ const TypingDots: React.FC = () => (
 
 export const TypingIndicator: React.FC = () => {
   return (
-    <Box sx={{ p: 1, mb: 2 }}>
+    <Box sx={{ p: 0.5, mb: 1 }}>
       <Paper
         elevation={1}
         sx={{
-          p: 2,
+          p: 1,
           bgcolor: 'background.paper',
-          maxWidth: 200,
+          maxWidth: 180,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Chip
-            icon={<SmartToy />}
+            icon={<SmartToy fontSize="small" />}
             label="AGENT"
             size="small"
             color="secondary"
             variant="outlined"
+            sx={{
+              height: 20,
+              fontSize: '0.65rem',
+              '& .MuiChip-label': { px: 0.5 },
+              '& .MuiChip-icon': { fontSize: '0.8rem' }
+            }}
           />
-        </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            Agent is thinking
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+            is thinking
           </Typography>
           <TypingDots />
         </Box>

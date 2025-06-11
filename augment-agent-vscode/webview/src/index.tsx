@@ -23,8 +23,18 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-    fontSize: 13,
+    fontSize: 12,
+    body1: {
+      fontSize: '0.8rem',
+    },
+    body2: {
+      fontSize: '0.75rem',
+    },
+    caption: {
+      fontSize: '0.7rem',
+    },
   },
+  spacing: 6, // Reduce default spacing from 8 to 6
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -38,6 +48,13 @@ const theme = createTheme({
           height: '100vh',
           display: 'flex',
           flexDirection: 'column',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none', // Remove default elevation shadows
         },
       },
     },

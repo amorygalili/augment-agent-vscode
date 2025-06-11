@@ -22,7 +22,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   }, [message, disabled, onSendMessage]);
 
-  const handleKeyPress = useCallback((event: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSend();
@@ -38,20 +38,20 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <Box
       sx={{
-        p: 2,
+        p: 1,
         borderTop: 1,
         borderColor: 'divider',
         bgcolor: 'background.paper',
       }}
     >
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-end' }}>
         <TextField
           fullWidth
           multiline
-          maxRows={4}
+          maxRows={3}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
           placeholder="Type your message here..."
           disabled={disabled}
           variant="outlined"
@@ -59,6 +59,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           sx={{
             '& .MuiOutlinedInput-root': {
               bgcolor: 'background.default',
+              fontSize: '0.8rem',
+            },
+            '& .MuiOutlinedInput-input': {
+              py: 0.75,
             },
           }}
         />
@@ -69,20 +73,22 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               color="primary"
               onClick={handleSend}
               disabled={disabled || !message.trim()}
-              sx={{ mb: 0.5 }}
+              size="small"
+              sx={{ mb: 0.25, p: 0.5 }}
             >
-              <Send />
+              <Send fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
-        
+
         <Tooltip title="Clear chat history">
           <IconButton
             color="secondary"
             onClick={handleClear}
-            sx={{ mb: 0.5 }}
+            size="small"
+            sx={{ mb: 0.25, p: 0.5 }}
           >
-            <Clear />
+            <Clear fontSize="small" />
           </IconButton>
         </Tooltip>
       </Box>

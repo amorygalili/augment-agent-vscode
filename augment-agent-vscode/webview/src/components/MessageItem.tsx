@@ -52,11 +52,11 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   };
 
   return (
-    <Box sx={{ mb: 2 }}>
+    <Box sx={{ mb: 1 }}>
       <Paper
         elevation={1}
         sx={{
-          p: 2,
+          p: 1.5,
           bgcolor: message.type === 'user' ? 'primary.dark' : 'background.paper',
           border: message.type === 'error' ? 2 : 0,
           borderColor: 'error.main',
@@ -68,26 +68,36 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 1,
+            mb: 0.5,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Chip
               icon={getMessageIcon(message.type)}
               label={message.type.toUpperCase()}
               size="small"
               color={getMessageColor(message.type) as any}
               variant="outlined"
+              sx={{
+                height: 20,
+                fontSize: '0.65rem',
+                '& .MuiChip-label': { px: 0.5 },
+                '& .MuiChip-icon': { fontSize: '0.8rem' }
+              }}
             />
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
               {message.timestamp.toLocaleTimeString()}
             </Typography>
           </Box>
-          
+
           <IconButton
             size="small"
             onClick={handleCopyMessage}
-            sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
+            sx={{
+              opacity: 0.7,
+              '&:hover': { opacity: 1 },
+              p: 0.25
+            }}
           >
             <ContentCopy fontSize="small" />
           </IconButton>
@@ -100,16 +110,18 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           sx={{
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
+            fontSize: '0.8rem',
+            lineHeight: 1.3,
             '& code': {
               fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-              fontSize: '0.9em',
+              fontSize: '0.75rem',
             },
             '& pre': {
               backgroundColor: '#2d2d30',
-              padding: '8px',
-              borderRadius: '4px',
+              padding: '6px',
+              borderRadius: '3px',
               overflow: 'auto',
-              margin: '8px 0',
+              margin: '4px 0',
               '& code': {
                 backgroundColor: 'transparent',
                 padding: 0,

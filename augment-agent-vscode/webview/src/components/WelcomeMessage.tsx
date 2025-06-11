@@ -10,65 +10,65 @@ export const WelcomeMessage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        p: 3,
+        p: 1.5,
       }}
     >
-      <Box sx={{ maxWidth: 400, textAlign: 'center' }}>
-        <Typography variant="h5" gutterBottom color="primary">
+      <Box sx={{ maxWidth: 350, textAlign: 'center' }}>
+        <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
           Welcome to Coding Agent!
         </Typography>
-        
-        <Typography variant="body1" paragraph color="text.secondary">
+
+        <Typography variant="body2" paragraph color="text.secondary" sx={{ fontSize: '0.8rem' }}>
           I'm an AI-powered software engineering assistant.
         </Typography>
-        
-        <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+
+        <Typography variant="subtitle2" gutterBottom sx={{ mt: 2, fontSize: '0.85rem' }}>
           I can help you with:
         </Typography>
-        
-        <List>
-          <ListItem>
-            <ListItemIcon>
-              <Code color="primary" />
+
+        <List dense>
+          <ListItem sx={{ py: 0.25 }}>
+            <ListItemIcon sx={{ minWidth: 28 }}>
+              <Code color="primary" fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="Code analysis and debugging"
-              primaryTypographyProps={{ variant: 'body2' }}
+              primaryTypographyProps={{ variant: 'body2', fontSize: '0.75rem' }}
             />
           </ListItem>
-          
-          <ListItem>
-            <ListItemIcon>
-              <BugReport color="primary" />
+
+          <ListItem sx={{ py: 0.25 }}>
+            <ListItemIcon sx={{ minWidth: 28 }}>
+              <BugReport color="primary" fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="Writing and modifying code"
-              primaryTypographyProps={{ variant: 'body2' }}
+              primaryTypographyProps={{ variant: 'body2', fontSize: '0.75rem' }}
             />
           </ListItem>
-          
-          <ListItem>
-            <ListItemIcon>
-              <PlayArrow color="primary" />
+
+          <ListItem sx={{ py: 0.25 }}>
+            <ListItemIcon sx={{ minWidth: 28 }}>
+              <PlayArrow color="primary" fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="Running tests and commands"
-              primaryTypographyProps={{ variant: 'body2' }}
+              primaryTypographyProps={{ variant: 'body2', fontSize: '0.75rem' }}
             />
           </ListItem>
-          
-          <ListItem>
-            <ListItemIcon>
-              <Search color="primary" />
+
+          <ListItem sx={{ py: 0.25 }}>
+            <ListItemIcon sx={{ minWidth: 28 }}>
+              <Search color="primary" fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="Exploring codebases"
-              primaryTypographyProps={{ variant: 'body2' }}
+              primaryTypographyProps={{ variant: 'body2', fontSize: '0.75rem' }}
             />
           </ListItem>
         </List>
-        
-        <Typography variant="body2" sx={{ mt: 2 }} color="text.secondary">
+
+        <Typography variant="body2" sx={{ mt: 1.5, fontSize: '0.75rem' }} color="text.secondary">
           Type your message below to get started!
         </Typography>
       </Box>

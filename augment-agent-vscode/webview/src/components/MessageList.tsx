@@ -23,16 +23,16 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       sx={{
         flex: 1,
         overflow: 'auto',
-        p: 1,
+        p: 0.5,
         '&::-webkit-scrollbar': {
-          width: '8px',
+          width: '6px',
         },
         '&::-webkit-scrollbar-track': {
           background: 'transparent',
         },
         '&::-webkit-scrollbar-thumb': {
           background: '#424242',
-          borderRadius: '4px',
+          borderRadius: '3px',
         },
         '&::-webkit-scrollbar-thumb:hover': {
           background: '#555',

@@ -108,13 +108,13 @@ export const ChatApp: React.FC = () => {
       {/* Header */}
       <Box
         sx={{
-          p: 2,
+          p: 1,
           borderBottom: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
         }}
       >
-        <Typography variant="h6" component="h1">
+        <Typography variant="subtitle1" component="h1" sx={{ fontWeight: 600 }}>
           Coding Agent
         </Typography>
       </Box>
