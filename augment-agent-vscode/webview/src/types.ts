@@ -1,8 +1,9 @@
 export interface AgentMessage {
   id: string;
-  type: 'user' | 'agent' | 'system' | 'error';
+  type: 'user' | 'agent' | 'system' | 'error' | 'thinking' | 'debug' | 'tool_call' | 'tool_output';
   content: string;
   timestamp: Date;
+  metadata?: any;
 }
 
 export interface VSCodeAPI {

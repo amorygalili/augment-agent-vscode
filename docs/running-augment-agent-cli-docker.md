@@ -10,7 +10,7 @@ Clone the repository, install Python dependencies, and set API keys:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/augmentcode/augment-swebench-agent.git
+git clone -b output-json https://github.com/amorygalili/augment-swebench-agent.git
 cd augment-swebench-agent
 
 # 2. Create virtual environment

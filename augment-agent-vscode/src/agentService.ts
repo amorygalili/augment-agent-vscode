@@ -5,10 +5,22 @@ import * as fs from 'fs';
 
 export interface AgentMessage {
     id: string;
-    type: 'user' | 'agent' | 'system' | 'error';
+    type: 'user' | 'agent' | 'system' | 'error' | 'thinking' | 'debug' | 'tool_call' | 'tool_output';
     content: string;
     timestamp: Date;
     metadata?: any;
+}
+
+export interface JsonAgentMessage {
+    type: 'thinking' | 'user_input' | 'new_turn' | 'tool_call' | 'tool_output' | 'agent_response' | 'debug' | 'error';
+    content: string;
+    timestamp: string;
+    metadata?: {
+        token_count?: number;
+        tool_name?: string;
+        tool_input?: any;
+        turn_number?: number;
+    };
 }
 
 export interface AgentConfig {
@@ -61,6 +73,47 @@ export class AgentService {
     private messageHandlers: ((message: AgentMessage) => void)[] = [];
     private isRunning = false;
     private currentWorkspace: string;
+
+    private convertJsonToAgentMessage(jsonMsg: JsonAgentMessage): AgentMessage {
+        // Map JSON message types to AgentMessage types
+        let type: AgentMessage['type'];
+        switch (jsonMsg.type) {
+            case 'thinking':
+                type = 'system';
+                break;
+            case 'user_input':
+                type = 'user';
+                break;
+            case 'agent_response':
+                type = 'agent';
+                break;
+            case 'debug':
+                type = 'debug';
+                break;
+            case 'tool_call':
+                type = 'tool_call';
+                break;
+            case 'tool_output':
+                type = 'tool_output';
+                break;
+            case 'error':
+                type = 'error';
+                break;
+            case 'new_turn':
+                type = 'debug';
+                break;
+            default:
+                type = 'system';
+        }
+
+        return {
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+            type: type,
+            content: jsonMsg.content,
+            timestamp: new Date(), // Use current time since the timestamp format may vary
+            metadata: jsonMsg.metadata
+        };
+    }
 
     constructor(private config: AgentConfig) {
         this.outputChannel = vscode.window.createOutputChannel('Coding Agent');
@@ -205,6 +258,9 @@ export class AgentService {
             args.push('--needs-permission');
         }
 
+        // Always use JSON output for structured communication
+        args.push('--json-output');
+
         // Set environment variables
         const env = { ...process.env };
         if (this.config.openaiApiKey) {
@@ -272,23 +328,29 @@ export class AgentService {
     private handleAgentOutput(output: string) {
         this.log(`Agent output: ${output}`, 'debug');
 
-        // Parse agent output and create appropriate messages
+        // Always parse JSON output for structured communication
         const lines = output.split('\n').filter(line => line.trim());
 
         for (const line of lines) {
-            // Skip empty lines and debug output
-            if (!line.trim() || line.includes('[DEBUG]')) {
+            if (!line.trim()) {
                 continue;
             }
 
-            const message: AgentMessage = {
-                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-                type: 'agent',
-                content: line.trim(),
-                timestamp: new Date()
-            };
-
-            this.notifyHandlers(message);
+            try {
+                const jsonMsg: JsonAgentMessage = JSON.parse(line);
+                const message = this.convertJsonToAgentMessage(jsonMsg);
+                this.notifyHandlers(message);
+            } catch (error) {
+                // If JSON parsing fails, treat as plain text (fallback for compatibility)
+                this.log(`Failed to parse JSON: ${line}`, 'debug');
+                const message: AgentMessage = {
+                    id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+                    type: 'agent',
+                    content: line.trim(),
+                    timestamp: new Date()
+                };
+                this.notifyHandlers(message);
+            }
         }
     }
 

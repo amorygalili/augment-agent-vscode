@@ -79,7 +79,8 @@
         messagesContainer.appendChild(messageElement);
         scrollToBottom();
 
-        // If this is an agent message, we're no longer typing
+        // If this is an agent response or error message, we're no longer typing
+        // Keep typing for debug, tool_call, tool_output messages
         if (message.type === 'agent' || message.type === 'error') {
             setTyping(false);
         }

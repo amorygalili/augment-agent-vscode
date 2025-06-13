@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Paper, Typography, Chip, IconButton } from '@mui/material';
-import { Person, SmartToy, Settings, Error, ContentCopy } from '@mui/icons-material';
+import { Person, SmartToy, Settings, Error, ContentCopy, Psychology, Build, Code, Terminal } from '@mui/icons-material';
 import { AgentMessage } from '../types';
 
 interface MessageItemProps {
@@ -17,6 +17,14 @@ const getMessageIcon = (type: string) => {
       return <Settings fontSize="small" />;
     case 'error':
       return <Error fontSize="small" />;
+    case 'thinking':
+      return <Psychology fontSize="small" />;
+    case 'debug':
+      return <Code fontSize="small" />;
+    case 'tool_call':
+      return <Build fontSize="small" />;
+    case 'tool_output':
+      return <Terminal fontSize="small" />;
     default:
       return <SmartToy fontSize="small" />;
   }
@@ -32,6 +40,14 @@ const getMessageColor = (type: string) => {
       return 'default';
     case 'error':
       return 'error';
+    case 'thinking':
+      return 'info';
+    case 'debug':
+      return 'warning';
+    case 'tool_call':
+      return 'success';
+    case 'tool_output':
+      return 'info';
     default:
       return 'default';
   }

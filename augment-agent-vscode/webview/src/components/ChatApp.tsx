@@ -56,7 +56,8 @@ export const ChatApp: React.FC = () => {
                 timestamp: new Date(message.message!.timestamp)
               }]);
 
-              // If this is an agent or error message, stop typing
+              // If this is an agent response or error message, stop typing
+              // Keep typing for debug, tool_call, tool_output messages
               if (message.message.type === 'agent' || message.message.type === 'error') {
                 setIsTyping(false);
               }

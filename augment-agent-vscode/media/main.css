@@ -73,6 +73,33 @@
     opacity: 0.8;
 }
 
+.message.thinking {
+    background-color: var(--vscode-editorInfo-background);
+    border-left: 3px solid var(--vscode-charts-purple);
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.message.debug {
+    background-color: var(--vscode-editorWarning-background);
+    border-left: 3px solid var(--vscode-charts-orange);
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.message.tool_call {
+    background-color: var(--vscode-editorInfo-background);
+    border-left: 3px solid var(--vscode-charts-green);
+    font-family: monospace;
+}
+
+.message.tool_output {
+    background-color: var(--vscode-editor-background);
+    border-left: 3px solid var(--vscode-charts-blue);
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
 .message.error {
     background-color: var(--vscode-editorError-background);
     border-left: 3px solid var(--vscode-errorForeground);
