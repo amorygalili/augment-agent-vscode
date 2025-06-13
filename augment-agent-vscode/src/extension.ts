@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { AgentService, AgentConfig } from './agentService';
 import { ChatWebviewProvider } from './chatWebviewProvider';
 import { HistoryTreeProvider } from './historyTreeProvider';
@@ -11,39 +10,57 @@ let historyProvider: HistoryTreeProvider;
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Coding Agent extension is now active!');
 
-	// Initialize services
-	const config = getAgentConfig();
-	agentService = new AgentService(config);
+	try {
+		// Initialize services
+		console.log('Extension: Getting agent configuration');
+		const config = getAgentConfig();
+		console.log('Extension: Creating AgentService with config:', config);
 
-	// Create providers
-	chatProvider = new ChatWebviewProvider(context.extensionUri, agentService);
-	historyProvider = new HistoryTreeProvider(agentService);
+		agentService = new AgentService(config);
+		console.log('Extension: AgentService created successfully');
 
-	// Register webview provider
-	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(ChatWebviewProvider.viewType, chatProvider)
-	);
+		// Create providers
+		console.log('Extension: Creating webview and history providers');
+		chatProvider = new ChatWebviewProvider(context.extensionUri, agentService);
+		historyProvider = new HistoryTreeProvider(agentService);
+		console.log('Extension: Providers created successfully');
 
-	// Register tree data provider
-	context.subscriptions.push(
-		vscode.window.registerTreeDataProvider('coding-agent.historyView', historyProvider)
-	);
+		// Register webview provider
+		console.log('Extension: Registering webview provider');
+		context.subscriptions.push(
+			vscode.window.registerWebviewViewProvider(ChatWebviewProvider.viewType, chatProvider)
+		);
 
-	// Register commands
-	registerCommands(context);
+		// Register tree data provider
+		console.log('Extension: Registering tree data provider');
+		context.subscriptions.push(
+			vscode.window.registerTreeDataProvider('coding-agent.historyView', historyProvider)
+		);
 
-	// Listen for configuration changes
-	context.subscriptions.push(
-		vscode.workspace.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('coding-agent')) {
-				const newConfig = getAgentConfig();
-				agentService.updateConfig(newConfig);
-			}
-		})
-	);
+		// Register commands
+		console.log('Extension: Registering commands');
+		registerCommands(context);
 
-	// Add agent service to subscriptions for cleanup
-	context.subscriptions.push(agentService);
+		// Listen for configuration changes
+		console.log('Extension: Setting up configuration change listener');
+		context.subscriptions.push(
+			vscode.workspace.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('coding-agent')) {
+					console.log('Extension: Configuration changed, updating agent service');
+					const newConfig = getAgentConfig();
+					agentService.updateConfig(newConfig);
+				}
+			})
+		);
+
+		// Add agent service to subscriptions for cleanup
+		context.subscriptions.push(agentService);
+
+		console.log('Extension: Activation completed successfully');
+	} catch (error) {
+		console.error('Extension: Activation failed:', error);
+		vscode.window.showErrorMessage(`Coding Agent activation failed: ${error instanceof Error ? error.message : String(error)}`);
+	}
 }
 
 function registerCommands(context: vscode.ExtensionContext) {
@@ -60,8 +77,10 @@ function registerCommands(context: vscode.ExtensionContext) {
 
 	// Show logs command
 	const showLogsCommand = vscode.commands.registerCommand('coding-agent.showLogs', () => {
-		vscode.commands.executeCommand('workbench.action.output.toggleOutput');
-		vscode.commands.executeCommand('workbench.action.output.show.extension-output-augment-code.coding-agent-#1-Coding Agent');
+		// Show the output panel and select our channel
+		vscode.commands.executeCommand('workbench.action.output.show');
+		// The output channel should be available as "Coding Agent"
+		vscode.commands.executeCommand('workbench.action.output.show', 'Coding Agent');
 	});
 
 	// Open settings command
@@ -80,13 +99,22 @@ function registerCommands(context: vscode.ExtensionContext) {
 		historyProvider.refresh();
 	});
 
+	// Debug command to test logging
+	const debugCommand = vscode.commands.registerCommand('coding-agent.debug', () => {
+		console.log('Extension: Debug command triggered');
+		const config = getAgentConfig();
+		console.log('Extension: Current config:', JSON.stringify(config, null, 2));
+		vscode.window.showInformationMessage('Debug info logged to console and output channel');
+	});
+
 	context.subscriptions.push(
 		openChatCommand,
 		clearHistoryCommand,
 		showLogsCommand,
 		openSettingsCommand,
 		copyMessageCommand,
-		refreshHistoryCommand
+		refreshHistoryCommand,
+		debugCommand
 	);
 }
 

@@ -6,14 +6,9 @@ import { WelcomeMessage } from './WelcomeMessage';
 import { TypingIndicator } from './TypingIndicator';
 import { AgentMessage, VSCodeAPI, WebviewMessage, ExtensionMessage } from '../types';
 
-// Global VSCode API instance to avoid multiple acquisitions
-let vscodeApi: VSCodeAPI | null = null;
-
 const getVSCodeAPI = (): VSCodeAPI => {
-  if (!vscodeApi) {
-    vscodeApi = window.acquireVsCodeApi();
-  }
-  return vscodeApi;
+  // Use the globally available VSCode API that was acquired in the HTML
+  return (window as any).vscode;
 };
 
 export const ChatApp: React.FC = () => {

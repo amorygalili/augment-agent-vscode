@@ -22,6 +22,38 @@ export interface AgentConfig {
     enableLogging: boolean;
 }
 
+export function validateConfig(config: AgentConfig): { valid: boolean, reason: string } {
+    // If no agent path is configured, we'll run in demo mode
+    if (!config.agentPath) {
+        return { valid: false, reason: 'No agent path configured' };
+    }
+
+    // Validate python path exists and is executable
+    try {
+        const pythonExists = cp.spawnSync(config.pythonPath, ['--version']);
+        if (pythonExists.error || pythonExists.status !== 0) {
+            return { valid: false, reason: `Python not found at ${config.pythonPath}` };
+        }
+    } catch (error) {
+        return { valid: false, reason: `Error validating Python path: ${error instanceof Error ? error.message : String(error)}` };
+    }
+
+    // Validate agent path exists
+    try {
+        if (!fs.existsSync(config.agentPath)) {
+            return { valid: false, reason: `Agent script not found at ${config.agentPath}` };
+        }
+    } catch (error) {
+        return { valid: false, reason: `Error validating agent path: ${error instanceof Error ? error.message : String(error)}` };
+    }
+
+    if (!config.openaiApiKey && !config.anthropicApiKey) {
+        return { valid: false, reason: 'No API keys configured' };
+    }
+
+    return { valid: true, reason: '' };
+}
+
 export class AgentService {
     private process: cp.ChildProcess | null = null;
     private outputChannel: vscode.OutputChannel;
@@ -34,17 +66,16 @@ export class AgentService {
         this.outputChannel = vscode.window.createOutputChannel('Coding Agent');
         this.currentWorkspace = config.workspace;
 
-        // Send welcome message if in demo mode
-        if (!config.agentPath) {
-            setTimeout(() => {
-                const welcomeMessage: AgentMessage = {
-                    id: 'welcome-' + Date.now().toString(),
-                    type: 'system',
-                    content: '🎉 Welcome to Coding Agent! This is demo mode. Configure the agent path in settings to connect to the AI assistant.',
-                    timestamp: new Date()
-                };
-                this.notifyHandlers(welcomeMessage);
-            }, 500);
+        this.log('AgentService initialized', 'info');
+
+        if (!this.config.agentPath) {
+            const welcomeMessage: AgentMessage = {
+                id: 'welcome-' + Date.now().toString(),
+                type: 'system',
+                content: '🎉 Welcome to Coding Agent! Configure the agent path in settings to connect to the AI assistant.',
+                timestamp: new Date()
+            };
+            this.notifyHandlers(welcomeMessage);
         }
     }
 
@@ -77,26 +108,29 @@ export class AgentService {
     }
 
     private log(message: string, level: 'info' | 'error' | 'debug' = 'info') {
-        if (this.config.enableLogging) {
-            const timestamp = new Date().toISOString();
-            const logMessage = `[${timestamp}] ${level.toUpperCase()}: ${message}`;
-            this.outputChannel.appendLine(logMessage);
-            
-            if (level === 'error') {
-                console.error(logMessage);
-            } else if (level === 'debug') {
-                console.debug(logMessage);
-            } else {
-                console.log(logMessage);
-            }
+        const timestamp = new Date().toISOString();
+        const logMessage = `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+
+        // Always log to output channel for debugging
+        this.outputChannel.appendLine(logMessage);
+
+        // Also log to console for extension host debugging
+        if (level === 'error') {
+            console.error(`AgentService: ${logMessage}`);
+        } else if (level === 'debug') {
+            console.debug(`AgentService: ${logMessage}`);
+        } else {
+            console.log(`AgentService: ${logMessage}`);
+        }
+
+        // Show output channel for errors to help with debugging
+        if (level === 'error') {
+            this.outputChannel.show(true);
         }
     }
 
     public async sendMessage(message: string): Promise<void> {
-        if (!this.validateConfig()) {
-            return;
-        }
-
+        // Always add the user message first, regardless of validation
         const userMessage: AgentMessage = {
             id: Date.now().toString(),
             type: 'user',
@@ -107,43 +141,48 @@ export class AgentService {
         this.notifyHandlers(userMessage);
         this.log(`User message: ${message}`);
 
-        try {
-            if (!this.config.agentPath) {
-                // Demo mode - simulate agent response
-                await this.simulateAgentResponse(message);
-            } else {
-                await this.startAgent();
-                await this.sendToAgent(message);
-            }
-        } catch (error) {
+        const validationResult = validateConfig(this.config);
+        if (!validationResult.valid) {
+            // If validation fails, send an error message but don't block the UI
+            this.log(validationResult.reason, 'error');
+            vscode.window.showErrorMessage(`Coding Agent: ${validationResult.reason}`);
+            
             const errorMessage: AgentMessage = {
                 id: Date.now().toString(),
                 type: 'error',
-                content: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                content: `Configuration validation failed: ${validationResult.reason}`,
+                timestamp: new Date()
+            };
+            this.notifyHandlers(errorMessage);
+            return;
+        }
+
+         try {
+            await this.startAgent();
+        } catch (error: any) {
+            const errorMessage: AgentMessage = {
+                id: Date.now().toString(),
+                type: 'error',
+                content: `Error starting agent: ${error instanceof Error ? error.message : String(error)}`,
+                timestamp: new Date()
+            };
+            this.notifyHandlers(errorMessage);
+            this.log(`Error sending message: ${error}`, 'error');
+            return;
+        }
+        
+        try {
+            await this.sendToAgent(message);
+        } catch (error: any) {
+            const errorMessage: AgentMessage = {
+                id: Date.now().toString(),
+                type: 'error',
+                content: `Error sending message to agent: ${error instanceof Error ? error.message : String(error)}`,
                 timestamp: new Date()
             };
             this.notifyHandlers(errorMessage);
             this.log(`Error sending message: ${error}`, 'error');
         }
-    }
-
-    private validateConfig(): boolean {
-        // If no agent path is configured, we'll run in demo mode
-        if (!this.config.agentPath) {
-            this.log('No agent path configured, running in demo mode');
-            return true;
-        }
-
-        if (!fs.existsSync(this.config.agentPath)) {
-            vscode.window.showErrorMessage(`Coding Agent: Agent script not found at ${this.config.agentPath}`);
-            return false;
-        }
-
-        if (!this.config.openaiApiKey && !this.config.anthropicApiKey) {
-            vscode.window.showWarningMessage('Coding Agent: No API keys configured. Please set OpenAI or Anthropic API key in settings');
-        }
-
-        return true;
     }
 
     private async startAgent(): Promise<void> {
@@ -153,9 +192,13 @@ export class AgentService {
 
         this.log('Starting augment-swebench-agent...');
 
+        // Create logs path in workspace or temp directory
+        const logsPath = path.join(this.currentWorkspace, 'agent_logs.txt');
+
         const args = [
             this.config.agentPath,
-            '--workspace', this.currentWorkspace
+            '--workspace', this.currentWorkspace,
+            '--logs-path', logsPath
         ];
 
         if (this.config.askPermission) {
@@ -201,7 +244,8 @@ export class AgentService {
                 this.process.stderr.on('data', (data) => {
                     const error = data.toString();
                     this.log(`Agent stderr: ${error}`, 'error');
-                    
+                    reject(error);
+
                     const errorMessage: AgentMessage = {
                         id: Date.now().toString(),
                         type: 'error',
@@ -227,10 +271,10 @@ export class AgentService {
 
     private handleAgentOutput(output: string) {
         this.log(`Agent output: ${output}`, 'debug');
-        
+
         // Parse agent output and create appropriate messages
         const lines = output.split('\n').filter(line => line.trim());
-        
+
         for (const line of lines) {
             // Skip empty lines and debug output
             if (!line.trim() || line.includes('[DEBUG]')) {
@@ -246,31 +290,6 @@ export class AgentService {
 
             this.notifyHandlers(message);
         }
-    }
-
-    private async simulateAgentResponse(userMessage: string): Promise<void> {
-        // Simulate thinking time
-        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-        const responses = [
-            "I'm a demo version of the Coding Agent. To use the full functionality, please configure the agent path in settings.",
-            "Hello! I can see your message, but I'm running in demo mode. Configure the agent path to connect to the real AI assistant.",
-            "This is a demonstration of the React + Material UI interface. The real agent would analyze your code and provide intelligent assistance.",
-            "Demo mode active! The interface is working perfectly. Set up the agent configuration to unlock AI-powered coding assistance.",
-            `You said: "${userMessage}". In full mode, I would provide detailed code analysis and suggestions based on your workspace.`
-        ];
-
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-        const agentMessage: AgentMessage = {
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-            type: 'agent',
-            content: randomResponse,
-            timestamp: new Date()
-        };
-
-        this.notifyHandlers(agentMessage);
-        this.log(`Demo response: ${randomResponse}`);
     }
 
     private async sendToAgent(message: string): Promise<void> {
@@ -297,7 +316,7 @@ export class AgentService {
         if (this.process) {
             this.log('Stopping agent process...');
             this.process.kill('SIGTERM');
-            
+
             // Wait for graceful shutdown
             await new Promise<void>((resolve) => {
                 if (this.process) {
@@ -312,7 +331,7 @@ export class AgentService {
                     resolve();
                 }
             });
-            
+
             this.process = null;
             this.isRunning = false;
         }
