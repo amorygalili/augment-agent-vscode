@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AgentService, AgentMessage } from './agentService';
+import { AgentService, AgentMessage, ToolCallState } from './agentService';
 
 export class ChatWebviewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'coding-agent.chatView';
@@ -12,6 +12,11 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         // Listen for agent messages
         this.agentService.onMessage((message) => {
             this.addMessage(message);
+        });
+
+        // Listen for tool call state changes
+        this.agentService.onToolCallStateChange((toolCallId, state) => {
+            this.updateToolCallState(toolCallId, state);
         });
     }
 
@@ -72,12 +77,24 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
         }
     }
 
+    private updateToolCallState(toolCallId: string, state: ToolCallState) {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: 'updateToolCallState',
+                toolCallId: toolCallId,
+                state: state
+            });
+        }
+    }
+
     private loadExistingMessages() {
         const history = this.agentService.getMessageHistory();
+        const toolCallStates = this.agentService.getAllToolCallStates();
         if (this._view) {
             this._view.webview.postMessage({
                 type: 'loadHistory',
-                messages: history
+                messages: history,
+                toolCallStates: Object.fromEntries(toolCallStates)
             });
         }
     }

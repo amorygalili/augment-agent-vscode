@@ -4,7 +4,7 @@ import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { WelcomeMessage } from './WelcomeMessage';
 import { TypingIndicator } from './TypingIndicator';
-import { AgentMessage, VSCodeAPI, WebviewMessage, ExtensionMessage } from '../types';
+import { AgentMessage, VSCodeAPI, WebviewMessage, ExtensionMessage, ToolCallState } from '../types';
 
 const getVSCodeAPI = (): VSCodeAPI => {
   // Use the globally available VSCode API that was acquired in the HTML
@@ -13,6 +13,7 @@ const getVSCodeAPI = (): VSCodeAPI => {
 
 export const ChatApp: React.FC = () => {
   const [messages, setMessages] = useState<AgentMessage[]>([]);
+  const [toolCallStates, setToolCallStates] = useState<Record<string, ToolCallState>>({});
   const [isTyping, setIsTyping] = useState(false);
   const [vscode] = useState<VSCodeAPI>(() => getVSCodeAPI());
 
@@ -83,6 +84,18 @@ export const ChatApp: React.FC = () => {
                 timestamp: new Date(msg.timestamp)
               })));
             }
+            if (message.toolCallStates) {
+              setToolCallStates(message.toolCallStates);
+            }
+            break;
+
+          case 'updateToolCallState':
+            if (message.toolCallId && message.state) {
+              setToolCallStates(prev => ({
+                ...prev,
+                [message.toolCallId!]: message.state!
+              }));
+            }
             break;
         }
       } catch (error) {
@@ -139,7 +152,7 @@ export const ChatApp: React.FC = () => {
         {messages.length === 0 ? (
           <WelcomeMessage />
         ) : (
-          <MessageList messages={messages} />
+          <MessageList messages={messages} toolCallStates={toolCallStates} />
         )}
         
         {isTyping && <TypingIndicator />}

@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { MessageItem } from './MessageItem';
-import { AgentMessage } from '../types';
+import { AgentMessage, ToolCallState } from '../types';
 
 interface MessageListProps {
   messages: AgentMessage[];
+  toolCallStates?: Record<string, ToolCallState>;
 }
 
-export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages, toolCallStates = {} }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -40,7 +41,11 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       }}
     >
       {messages.map((message) => (
-        <MessageItem key={message.id} message={message} />
+        <MessageItem
+          key={message.id}
+          message={message}
+          toolCallState={toolCallStates[message.id]}
+        />
       ))}
       <div ref={messagesEndRef} />
     </Box>

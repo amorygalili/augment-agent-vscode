@@ -1,10 +1,12 @@
 import React from 'react';
 import { Box, Paper, Typography, Chip, IconButton } from '@mui/material';
 import { Person, SmartToy, Settings, Error, ContentCopy, Psychology, Build, Code, Terminal } from '@mui/icons-material';
-import { AgentMessage } from '../types';
+import { AgentMessage, ToolCallState } from '../types';
+import { ToolCallAccordion } from './ToolCallAccordion';
 
 interface MessageItemProps {
   message: AgentMessage;
+  toolCallState?: ToolCallState;
 }
 
 const getMessageIcon = (type: string) => {
@@ -53,7 +55,7 @@ const getMessageColor = (type: string) => {
   }
 };
 
-export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
+export const MessageItem: React.FC<MessageItemProps> = ({ message, toolCallState }) => {
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(message.content);
   };
@@ -66,6 +68,23 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
       .replace(/`([^`]+)`/g, '<code style="background-color: #2d2d30; padding: 2px 4px; border-radius: 3px;">$1</code>')
       .replace(/\n/g, '<br>');
   };
+
+  // Use ToolCallAccordion for tool_call messages
+  if (message.type === 'tool_call' && toolCallState) {
+    return (
+      <ToolCallAccordion
+        toolCallMessage={message}
+        toolCallState={toolCallState}
+        onCopy={handleCopyMessage}
+      />
+    );
+  }
+
+  // Hide tool_output messages that are part of an accordion
+  // (they will be displayed inside the ToolCallAccordion)
+  if (message.type === 'tool_output') {
+    return null;
+  }
 
   return (
     <Box sx={{ mb: 1 }}>

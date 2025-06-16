@@ -11,6 +11,14 @@ export interface AgentMessage {
     metadata?: any;
 }
 
+export interface ToolCallState {
+    status: 'pending' | 'completed' | 'interrupted';
+    toolName?: string;
+    toolInput?: any;
+    output?: string;
+    outputMessageId?: string;
+}
+
 export interface JsonAgentMessage {
     type: 'thinking' | 'user_input' | 'new_turn' | 'tool_call' | 'tool_output' | 'agent_response' | 'debug' | 'error';
     content: string;
@@ -71,8 +79,10 @@ export class AgentService {
     private outputChannel: vscode.OutputChannel;
     private messageHistory: AgentMessage[] = [];
     private messageHandlers: ((message: AgentMessage) => void)[] = [];
+    private toolCallStateHandlers: ((toolCallId: string, state: ToolCallState) => void)[] = [];
     private isRunning = false;
     private currentWorkspace: string;
+    private toolCallStates: Map<string, ToolCallState> = new Map();
 
     private convertJsonToAgentMessage(jsonMsg: JsonAgentMessage): AgentMessage | null {
         // Skip user_input messages since we already handle user messages locally
@@ -109,13 +119,60 @@ export class AgentService {
                 type = 'system';
         }
 
-        return {
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+        const messageId = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+        const message: AgentMessage = {
+            id: messageId,
             type: type,
             content: jsonMsg.content,
             timestamp: new Date(), // Use current time since the timestamp format may vary
             metadata: jsonMsg.metadata
         };
+
+        // Handle tool call state tracking
+        if (jsonMsg.type === 'tool_call') {
+            const toolName = jsonMsg.metadata?.tool_name || 'Unknown Tool';
+            const toolInput = jsonMsg.metadata?.tool_input;
+
+            const toolCallState: ToolCallState = {
+                status: 'pending',
+                toolName: toolName,
+                toolInput: toolInput
+            };
+
+            this.toolCallStates.set(messageId, toolCallState);
+            this.notifyToolCallStateHandlers(messageId, toolCallState);
+        } else if (jsonMsg.type === 'tool_output') {
+            // Find the corresponding tool call and update its state
+            const toolCallId = this.findPendingToolCall();
+            if (toolCallId) {
+                const existingState = this.toolCallStates.get(toolCallId);
+                if (existingState) {
+                    const updatedState: ToolCallState = {
+                        ...existingState,
+                        status: 'completed',
+                        output: jsonMsg.content,
+                        outputMessageId: messageId
+                    };
+                    this.toolCallStates.set(toolCallId, updatedState);
+                    this.notifyToolCallStateHandlers(toolCallId, updatedState);
+                }
+            }
+        }
+
+        return message;
+    }
+
+    private findPendingToolCall(): string | null {
+        for (const [id, state] of this.toolCallStates.entries()) {
+            if (state.status === 'pending') {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    private notifyToolCallStateHandlers(toolCallId: string, state: ToolCallState) {
+        this.toolCallStateHandlers.forEach(handler => handler(toolCallId, state));
     }
 
     constructor(private config: AgentConfig) {
@@ -142,6 +199,18 @@ export class AgentService {
 
     public onMessage(handler: (message: AgentMessage) => void) {
         this.messageHandlers.push(handler);
+    }
+
+    public onToolCallStateChange(handler: (toolCallId: string, state: ToolCallState) => void) {
+        this.toolCallStateHandlers.push(handler);
+    }
+
+    public getToolCallState(toolCallId: string): ToolCallState | undefined {
+        return this.toolCallStates.get(toolCallId);
+    }
+
+    public getAllToolCallStates(): Map<string, ToolCallState> {
+        return new Map(this.toolCallStates);
     }
 
     public getMessageHistory(): AgentMessage[] {
@@ -383,6 +452,19 @@ export class AgentService {
     public async stopAgent(): Promise<void> {
         if (this.process) {
             this.log('Stopping agent process...');
+
+            // Mark all pending tool calls as interrupted
+            for (const [id, state] of this.toolCallStates.entries()) {
+                if (state.status === 'pending') {
+                    const updatedState: ToolCallState = {
+                        ...state,
+                        status: 'interrupted'
+                    };
+                    this.toolCallStates.set(id, updatedState);
+                    this.notifyToolCallStateHandlers(id, updatedState);
+                }
+            }
+
             this.process.kill('SIGTERM');
 
             // Wait for graceful shutdown

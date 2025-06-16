@@ -6,6 +6,14 @@ export interface AgentMessage {
   metadata?: any;
 }
 
+export interface ToolCallState {
+  status: 'pending' | 'completed' | 'interrupted';
+  toolName?: string;
+  toolInput?: any;
+  output?: string;
+  outputMessageId?: string;
+}
+
 export interface VSCodeAPI {
   postMessage(message: any): void;
   getState(): any;
@@ -18,9 +26,12 @@ export interface WebviewMessage {
 }
 
 export interface ExtensionMessage {
-  type: 'addMessage' | 'loadHistory';
+  type: 'addMessage' | 'loadHistory' | 'updateToolCallState';
   message?: AgentMessage;
   messages?: AgentMessage[];
+  toolCallStates?: Record<string, ToolCallState>;
+  toolCallId?: string;
+  state?: ToolCallState;
 }
 
 declare global {
