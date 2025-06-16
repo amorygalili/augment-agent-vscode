@@ -74,15 +74,18 @@ export class AgentService {
     private isRunning = false;
     private currentWorkspace: string;
 
-    private convertJsonToAgentMessage(jsonMsg: JsonAgentMessage): AgentMessage {
+    private convertJsonToAgentMessage(jsonMsg: JsonAgentMessage): AgentMessage | null {
+        // Skip user_input messages since we already handle user messages locally
+        // This prevents duplicate user messages from appearing in the chat
+        if (jsonMsg.type === 'user_input') {
+            return null;
+        }
+
         // Map JSON message types to AgentMessage types
         let type: AgentMessage['type'];
         switch (jsonMsg.type) {
             case 'thinking':
                 type = 'system';
-                break;
-            case 'user_input':
-                type = 'user';
                 break;
             case 'agent_response':
                 type = 'agent';
@@ -339,7 +342,10 @@ export class AgentService {
             try {
                 const jsonMsg: JsonAgentMessage = JSON.parse(line);
                 const message = this.convertJsonToAgentMessage(jsonMsg);
-                this.notifyHandlers(message);
+                // Only notify handlers if message is not null (i.e., not a filtered user_input)
+                if (message) {
+                    this.notifyHandlers(message);
+                }
             } catch (error) {
                 // If JSON parsing fails, treat as plain text (fallback for compatibility)
                 this.log(`Failed to parse JSON: ${line}`, 'debug');
