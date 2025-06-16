@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Paper, Typography, Chip, IconButton } from '@mui/material';
 import { Person, SmartToy, Settings, Error, ContentCopy, Psychology, Build, Code, Terminal } from '@mui/icons-material';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { AgentMessage, ToolCallState } from '../types';
 import { ToolCallAccordion } from './ToolCallAccordion';
 
@@ -60,14 +62,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, toolCallState
     navigator.clipboard.writeText(message.content);
   };
 
-  const processContent = (content: string) => {
-    // Basic markdown-like processing for display
-    return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code style="background-color: #2d2d30; padding: 2px 4px; border-radius: 3px;">$1</code>')
-      .replace(/\n/g, '<br>');
-  };
+
 
   // Use ToolCallAccordion for tool_call messages
   if (message.type === 'tool_call' && toolCallState) {
@@ -139,17 +134,34 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, toolCallState
         </Box>
 
         {/* Message Content */}
-        <Typography
-          variant="body2"
-          component="div"
+        <Box
           sx={{
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
             fontSize: '0.8rem',
             lineHeight: 1.3,
+            '& h1': {
+              margin: '16px 0 8px 0',
+              fontSize: '1.2rem',
+              fontWeight: 600,
+            },
+            '& h2': {
+              margin: '12px 0 6px 0',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+            },
+            '& h3': {
+              margin: '8px 0 4px 0',
+              fontSize: '1rem',
+              fontWeight: 600,
+            },
+            '& p': {
+              margin: '4px 0',
+            },
             '& code': {
               fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
               fontSize: '0.75rem',
+              backgroundColor: '#2d2d30',
+              padding: '2px 4px',
+              borderRadius: '3px',
             },
             '& pre': {
               backgroundColor: '#2d2d30',
@@ -162,11 +174,25 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, toolCallState
                 padding: 0,
               },
             },
+            '& ul, & ol': {
+              margin: '4px 0',
+              paddingLeft: '20px',
+            },
+            '& li': {
+              margin: '2px 0',
+            },
+            '& blockquote': {
+              borderLeft: '4px solid #555',
+              paddingLeft: '12px',
+              margin: '8px 0',
+              fontStyle: 'italic',
+            },
           }}
-          dangerouslySetInnerHTML={{
-            __html: processContent(message.content),
-          }}
-        />
+        >
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {message.content}
+          </ReactMarkdown>
+        </Box>
       </Paper>
     </Box>
   );

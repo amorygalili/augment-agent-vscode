@@ -16,6 +16,8 @@ import {
   StopCircle,
   ContentCopy,
 } from '@mui/icons-material';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { AgentMessage, ToolCallState } from '../types';
 
 interface ToolCallAccordionProps {
@@ -99,14 +101,7 @@ export const ToolCallAccordion: React.FC<ToolCallAccordionProps> = ({
     }
   };
 
-  const processContent = (content: string) => {
-    // Basic markdown-like processing for display
-    return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code style="background-color: #2d2d30; padding: 2px 4px; border-radius: 3px;">$1</code>')
-      .replace(/\n/g, '<br>');
-  };
+
 
   return (
     <Box sx={{ mb: 1 }}>
@@ -191,12 +186,8 @@ export const ToolCallAccordion: React.FC<ToolCallAccordionProps> = ({
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
               Tool Call:
             </Typography>
-            <Typography
-              variant="body2"
-              component="div"
+            <Box
               sx={{
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
                 fontSize: '0.8rem',
                 lineHeight: 1.3,
                 bgcolor: 'background.default',
@@ -204,15 +195,61 @@ export const ToolCallAccordion: React.FC<ToolCallAccordionProps> = ({
                 borderRadius: 1,
                 border: 1,
                 borderColor: 'divider',
+                '& h1': {
+                  margin: '16px 0 8px 0',
+                  fontSize: '1.2rem',
+                  fontWeight: 600,
+                },
+                '& h2': {
+                  margin: '12px 0 6px 0',
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                },
+                '& h3': {
+                  margin: '8px 0 4px 0',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                },
+                '& p': {
+                  margin: '4px 0',
+                },
                 '& code': {
                   fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
                   fontSize: '0.75rem',
+                  backgroundColor: '#2d2d30',
+                  padding: '2px 4px',
+                  borderRadius: '3px',
+                },
+                '& pre': {
+                  backgroundColor: '#2d2d30',
+                  padding: '6px',
+                  borderRadius: '3px',
+                  overflow: 'auto',
+                  margin: '4px 0',
+                  '& code': {
+                    backgroundColor: 'transparent',
+                    padding: 0,
+                  },
+                },
+                '& ul, & ol': {
+                  margin: '4px 0',
+                  paddingLeft: '20px',
+                },
+                '& li': {
+                  margin: '2px 0',
+                },
+                '& blockquote': {
+                  borderLeft: '4px solid #555',
+                  paddingLeft: '12px',
+                  margin: '8px 0',
+                  fontStyle: 'italic',
                 },
               }}
-              dangerouslySetInnerHTML={{
-                __html: processContent(toolCallMessage.content),
-              }}
-            />
+            >
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {toolCallMessage.content}
+              </ReactMarkdown>
+            </Box>
           </Box>
 
           {/* Tool Output */}
@@ -234,12 +271,8 @@ export const ToolCallAccordion: React.FC<ToolCallAccordionProps> = ({
                   <ContentCopy fontSize="small" />
                 </IconButton>
               </Box>
-              <Typography
-                variant="body2"
-                component="div"
+              <Box
                 sx={{
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
                   fontSize: '0.8rem',
                   lineHeight: 1.3,
                   bgcolor: 'background.default',
@@ -247,15 +280,61 @@ export const ToolCallAccordion: React.FC<ToolCallAccordionProps> = ({
                   borderRadius: 1,
                   border: 1,
                   borderColor: 'divider',
+                  '& h1': {
+                    margin: '16px 0 8px 0',
+                    fontSize: '1.2rem',
+                    fontWeight: 600,
+                  },
+                  '& h2': {
+                    margin: '12px 0 6px 0',
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                  },
+                  '& h3': {
+                    margin: '8px 0 4px 0',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                  },
+                  '& p': {
+                    margin: '4px 0',
+                  },
                   '& code': {
                     fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
                     fontSize: '0.75rem',
+                    backgroundColor: '#2d2d30',
+                    padding: '2px 4px',
+                    borderRadius: '3px',
+                  },
+                  '& pre': {
+                    backgroundColor: '#2d2d30',
+                    padding: '6px',
+                    borderRadius: '3px',
+                    overflow: 'auto',
+                    margin: '4px 0',
+                    '& code': {
+                      backgroundColor: 'transparent',
+                      padding: 0,
+                    },
+                  },
+                  '& ul, & ol': {
+                    margin: '4px 0',
+                    paddingLeft: '20px',
+                  },
+                  '& li': {
+                    margin: '2px 0',
+                  },
+                  '& blockquote': {
+                    borderLeft: '4px solid #555',
+                    paddingLeft: '12px',
+                    margin: '8px 0',
+                    fontStyle: 'italic',
                   },
                 }}
-                dangerouslySetInnerHTML={{
-                  __html: processContent(toolCallState.output),
-                }}
-              />
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {toolCallState.output}
+                </ReactMarkdown>
+              </Box>
             </Box>
           )}
 
