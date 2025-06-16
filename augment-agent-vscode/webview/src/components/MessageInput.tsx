@@ -1,17 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import { Box, TextField, IconButton, Tooltip } from '@mui/material';
-import { Send, Clear } from '@mui/icons-material';
+import { Send, Clear, StopCircle } from '@mui/icons-material';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
   onClearHistory: () => void;
+  onStopAgent: () => void;
   disabled?: boolean;
+  isTyping?: boolean;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
   onClearHistory,
+  onStopAgent,
   disabled = false,
+  isTyping = false,
 }) => {
   const [message, setMessage] = useState('');
 
@@ -35,6 +39,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   }, [onClearHistory]);
 
+  const handleStop = useCallback(() => {
+    onStopAgent();
+  }, [onStopAgent]);
+
   return (
     <Box
       sx={{
@@ -44,7 +52,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         bgcolor: 'background.paper',
       }}
     >
-      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-end' }}>
+      <Box sx={{ position: 'relative' }}>
         <TextField
           fullWidth
           multiline
@@ -60,37 +68,64 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             '& .MuiOutlinedInput-root': {
               bgcolor: 'background.default',
               fontSize: '0.8rem',
+              pr: 8, // Add padding right to make room for buttons
             },
             '& .MuiOutlinedInput-input': {
               py: 0.75,
             },
           }}
         />
-        
-        <Tooltip title="Send message">
-          <span>
-            <IconButton
-              color="primary"
-              onClick={handleSend}
-              disabled={disabled || !message.trim()}
-              size="small"
-              sx={{ mb: 0.25, p: 0.5 }}
-            >
-              <Send fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
 
-        <Tooltip title="Clear chat history">
-          <IconButton
-            color="secondary"
-            onClick={handleClear}
-            size="small"
-            sx={{ mb: 0.25, p: 0.5 }}
-          >
-            <Clear fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {/* Button container positioned inside the text field */}
+        <Box
+          sx={{
+            position: 'absolute',
+            right: 4,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            gap: 0.5,
+            alignItems: 'center',
+          }}
+        >
+          <Tooltip title="Clear chat history">
+            <IconButton
+              color="secondary"
+              onClick={handleClear}
+              size="small"
+              sx={{ p: 0.5 }}
+            >
+              <Clear fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          {isTyping ? (
+            <Tooltip title="Stop agent">
+              <IconButton
+                color="error"
+                onClick={handleStop}
+                size="small"
+                sx={{ p: 0.5 }}
+              >
+                <StopCircle fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Send message">
+              <span>
+                <IconButton
+                  color="primary"
+                  onClick={handleSend}
+                  disabled={disabled || !message.trim()}
+                  size="small"
+                  sx={{ p: 0.5 }}
+                >
+                  <Send fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
+        </Box>
       </Box>
     </Box>
   );

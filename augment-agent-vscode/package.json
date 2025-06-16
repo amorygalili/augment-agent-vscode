@@ -44,6 +44,11 @@
         "command": "coding-agent.openSettings",
         "title": "Open Settings",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "coding-agent.stopAgent",
+        "title": "Stop Agent",
+        "icon": "$(stop-circle)"
       }
     ],
     "viewsContainers": {
@@ -85,6 +90,11 @@
           "command": "coding-agent.showLogs",
           "when": "view == coding-agent.chatView",
           "group": "overflow"
+        },
+        {
+          "command": "coding-agent.stopAgent",
+          "when": "view == coding-agent.chatView",
+          "group": "navigation"
         }
       ]
     },

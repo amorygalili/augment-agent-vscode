@@ -43,6 +43,9 @@ export class ChatWebviewProvider implements vscode.WebviewViewProvider {
                         this.agentService.clearHistory();
                         this.refreshWebview();
                         break;
+                    case 'stopAgent':
+                        await this.agentService.stopAgent();
+                        break;
                     case 'ready':
                         console.log('ChatWebviewProvider: Webview reported ready, loading existing messages');
                         // Webview is ready, load existing messages

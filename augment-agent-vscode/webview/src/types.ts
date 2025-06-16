@@ -13,7 +13,7 @@ export interface VSCodeAPI {
 }
 
 export interface WebviewMessage {
-  type: 'sendMessage' | 'clearHistory' | 'ready';
+  type: 'sendMessage' | 'clearHistory' | 'ready' | 'stopAgent';
   message?: string;
 }
 

@@ -43,6 +43,18 @@ export const ChatApp: React.FC = () => {
     }
   }, [vscode]);
 
+  const handleStopAgent = useCallback(() => {
+    try {
+      const message: WebviewMessage = {
+        type: 'stopAgent',
+      };
+      vscode.postMessage(message);
+      setIsTyping(false);
+    } catch (error) {
+      console.error('Error stopping agent:', error);
+    }
+  }, [vscode]);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
@@ -137,7 +149,9 @@ export const ChatApp: React.FC = () => {
       <MessageInput
         onSendMessage={handleSendMessage}
         onClearHistory={handleClearHistory}
+        onStopAgent={handleStopAgent}
         disabled={isTyping}
+        isTyping={isTyping}
       />
     </Box>
   );

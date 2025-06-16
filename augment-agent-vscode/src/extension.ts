@@ -107,6 +107,17 @@ function registerCommands(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Debug info logged to console and output channel');
 	});
 
+	// Stop agent command
+	const stopAgentCommand = vscode.commands.registerCommand('coding-agent.stopAgent', async () => {
+		try {
+			await agentService.stopAgent();
+			vscode.window.showInformationMessage('Agent stopped successfully');
+		} catch (error) {
+			console.error('Extension: Failed to stop agent:', error);
+			vscode.window.showErrorMessage(`Failed to stop agent: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	});
+
 	context.subscriptions.push(
 		openChatCommand,
 		clearHistoryCommand,
@@ -114,7 +125,8 @@ function registerCommands(context: vscode.ExtensionContext) {
 		openSettingsCommand,
 		copyMessageCommand,
 		refreshHistoryCommand,
-		debugCommand
+		debugCommand,
+		stopAgentCommand
 	);
 }
 
