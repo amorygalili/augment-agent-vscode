@@ -54,6 +54,12 @@ This extension contributes the following settings:
 - `coding-agent.askPermission`: Ask for permission before executing commands (default: true)
 - `coding-agent.maxTurns`: Maximum number of conversation turns (default: 200)
 - `coding-agent.enableLogging`: Enable detailed logging (default: true)
+- `coding-agent.llmProvider`: LLM provider to use - "anthropic" or "openai" (default: anthropic)
+- `coding-agent.llmModel`: LLM model name (uses provider default if empty)
+- `coding-agent.llmTemperature`: Temperature for LLM generation, 0.0-2.0 (default: 0.0)
+- `coding-agent.llmMaxTokens`: Maximum tokens for LLM generation (default: 8192)
+
+**Note**: LLM configuration is passed to the agent via environment variables for compatibility.
 
 ## Usage
 

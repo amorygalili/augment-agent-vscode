@@ -143,7 +143,11 @@ function getAgentConfig(): AgentConfig {
 		anthropicApiKey: config.get('anthropicApiKey', ''),
 		askPermission: config.get('askPermission', true),
 		maxTurns: config.get('maxTurns', 200),
-		enableLogging: config.get('enableLogging', true)
+		enableLogging: config.get('enableLogging', true),
+		llmProvider: config.get('llmProvider', 'anthropic'),
+		llmModel: config.get('llmModel', ''),
+		llmTemperature: config.get('llmTemperature', 0.0),
+		llmMaxTokens: config.get('llmMaxTokens', 8192)
 	};
 }
 

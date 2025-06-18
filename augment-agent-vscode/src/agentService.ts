@@ -40,6 +40,10 @@ export interface AgentConfig {
     askPermission: boolean;
     maxTurns: number;
     enableLogging: boolean;
+    llmProvider: string;
+    llmModel?: string;
+    llmTemperature: number;
+    llmMaxTokens: number;
 }
 
 export function validateConfig(config: AgentConfig): { valid: boolean, reason: string } {
@@ -341,6 +345,14 @@ export class AgentService {
         if (this.config.anthropicApiKey) {
             env.ANTHROPIC_API_KEY = this.config.anthropicApiKey;
         }
+
+        // Set LLM configuration via environment variables
+        env.LLM_PROVIDER = this.config.llmProvider;
+        if (this.config.llmModel) {
+            env.LLM_MODEL = this.config.llmModel;
+        }
+        env.LLM_TEMPERATURE = this.config.llmTemperature.toString();
+        env.LLM_MAX_TOKENS = this.config.llmMaxTokens.toString();
 
         return new Promise((resolve, reject) => {
             this.process = cp.spawn(this.config.pythonPath, args, {

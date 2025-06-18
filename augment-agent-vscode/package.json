@@ -142,6 +142,35 @@
           "default": true,
           "description": "Enable detailed logging",
           "scope": "workspace"
+        },
+        "coding-agent.llmProvider": {
+          "type": "string",
+          "enum": ["anthropic", "openai"],
+          "default": "anthropic",
+          "description": "LLM provider to use (anthropic or openai)",
+          "scope": "workspace"
+        },
+        "coding-agent.llmModel": {
+          "type": "string",
+          "default": "",
+          "description": "LLM model name (uses provider default if empty)",
+          "scope": "workspace"
+        },
+        "coding-agent.llmTemperature": {
+          "type": "number",
+          "default": 0.0,
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "description": "Temperature for LLM generation (0.0 = deterministic, 2.0 = very creative)",
+          "scope": "workspace"
+        },
+        "coding-agent.llmMaxTokens": {
+          "type": "number",
+          "default": 8192,
+          "minimum": 1,
+          "maximum": 200000,
+          "description": "Maximum tokens for LLM generation",
+          "scope": "workspace"
         }
       }
     }
